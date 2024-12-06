@@ -70,7 +70,7 @@ function handleStompit() {
 
               try {
                   const event = JSON.parse(body); 
-                  const source = event.source;
+                  const source = event.data?.subject?.source;
                   const relative_path = event.data?.subject?.relativePath;
                   const url = source + relative_path;
 
