@@ -61,26 +61,23 @@ function handleStompit() {
             subscribeHeaders.destination
         );
             
-        let body = "";
-        message.readable.on("data", (chunk) => {
-          console.log("Chunk reçu :", chunk.toString());
-          body += chunk.toString();
-        });
-        message.readable.on("end", () => {
-          try {
-            const event = JSON.parse(body);
-            console.log("Événement complet reçu :", event);
-            const title = event.subject?.title; // Récupère le champ title
-            console.log("Titre du document créé :", title);
-          } catch (error) {
-            console.error(
-              "Erreur lors de l'analyse du message :",
-              error.message
-            );
-          }
-          client.ack(message);
-        });
+        
+          message.readString('utf8', (error, body) => {
+              if (error) {
+                  console.error("Erreur lors de la lecture du message :", error.message);
+                  return;
+              }
 
+              try {
+                  const event = JSON.parse(body); // Analyse du JSON
+                  console.log(event)
+                  const title = event.subject?.title; // Récupère le champ title
+              } catch (parseError) {
+                  console.error("Erreur lors de l'analyse du JSON :", parseError.message);
+              }
+
+              client.ack(message); // Accusé de réception
+          });
         
     });
   });
