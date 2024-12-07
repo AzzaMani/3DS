@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3DEXPERIENCE Events Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <h1>3DEXPERIENCE Events Viewer</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Source</th>
+        <th>Document Type</th>
+        <th>Created By</th>
+        <th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody id="events-table-body">
+      <!-- Les événements apparaîtront ici -->
+    </tbody>
+  </table>
+
+  <script>
+    // Connexion WebSocket
+    const ws = new WebSocket("ws://localhost:4242");
+
+    // Lorsque la connexion est ouverte
+    ws.onopen = () => {
+      console.log("Connexion WebSocket établie avec le backend.");
+    };
+
+    // Lorsque des messages sont reçus
+    ws.onmessage = (event) => {
+    try {
+        console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        const eventData = JSON.parse(event.data);
+        console.log(eventData)
+        
+
+        // Ajout de l'événement dans le tableau
+        const tableBody = document.getElementById("events-table-body");
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${eventData.data?.subject?.title || "N/A"}</td>
+            <td>${eventData.source || "N/A"}</td>
+            <td>${eventData.data?.eventClass || "N/A"}</td>
+            <td>${eventData.data?.user || "N/A"}</td>
+            <td>${new Date(eventData.time).toLocaleString()}</td>
+        `;
+
+        tableBody.appendChild(row);
+        
+    } catch (error) {
+        console.error("Erreur lors de l'analyse du message WebSocket :", error.message);
+    }
+    };
+
+    // Lorsque la connexion est fermée
+    ws.onclose = () => {
+      console.log("Connexion WebSocket fermée.");
+    };
+
+    // En cas d'erreur
+    ws.onerror = (error) => {
+      console.error("Erreur WebSocket :", error);
+    };
+  </script>
+</body>
+</html>

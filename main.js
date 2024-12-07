@@ -1,5 +1,17 @@
 const stompit = require("stompit");
 const axios = require('axios');
+const WebSocket = require("ws");
+const wss = new WebSocket.Server({ port: 4242 });
+
+wss.on("connection", (socket) => {
+  console.log("Client connecté au WebSocket");
+
+  socket.on("error", (err) => {
+    console.error("Erreur WebSocket côté client :", err.message);
+  });
+
+  socket.send(JSON.stringify({ message: "Connexion WebSocket réussie !" }));
+});
 
 function handleStompit() {
   const connectionHeaders = {
@@ -86,7 +98,13 @@ function handleStompit() {
 
                   event.data.subject.title = response.data.data[0].dataelements.title;
                   console.log("************************************************************")
-                    console.log('Event with document title:', event);
+                  console.log('Event with document title:', event);
+                  wss.clients.forEach((client) => {
+                    if (client.readyState === WebSocket.OPEN) {
+                      client.send(JSON.stringify(event));
+                    }
+                  });
+
               } catch (parseError) {
                   console.error("Erreur lors de l'analyse du JSON :", parseError.message);
               }
