@@ -1,5 +1,5 @@
 const stompit = require("stompit");
-const axios = require('axios');
+const axios = require("axios");
 const WebSocket = require("ws");
 const wss = new WebSocket.Server({ port: 4242 });
 
@@ -21,12 +21,10 @@ function handleStompit() {
     login: "b3935f56-98da-4d38-ab19-6a44660cdb11", // Login de l'agent CLM
     passcode: "$h~$7p4!:q=LtCuNHqG4G%q\"",
   };
-    console.log("Connexion établie au serveur ActiveMQ");
-
+  console.log("Connexion établie au serveur ActiveMQ");
 
   // Serveurs ActiveMQ disponibles
   const servers = [
-    
     {
       ssl: true,
       host: "eu1-msgbus-1.3dexperience.3ds.com",
@@ -34,7 +32,6 @@ function handleStompit() {
       connectHeaders: connectionHeaders,
     },
   ];
-    
 
   // Initialisation de la connexion STOMP avec gestion des échecs
   const manager = new stompit.ConnectFailover(servers, {
@@ -62,56 +59,60 @@ function handleStompit() {
     console.log("Connecté à ActiveMQ");
 
     // Souscription au topic
-      client.subscribe(subscribeHeaders, (error, message) => {
-        
+    client.subscribe(subscribeHeaders, (error, message) => {
       if (error) {
         console.error("Erreur de souscription :", error.message);
         return;
       }
-        console.log(
-            "Souscription réussie au topic :",
-            subscribeHeaders.destination
-        );
-        
-        
-          message.readString('utf8', async (error, body) => {
-              if (error) {
-                  console.error("Erreur lors de la lecture du message :", error.message);
-                  return;
-              }
+      console.log(
+        "Souscription réussie au topic :",
+        subscribeHeaders.destination
+      );
 
-              try {
-                  const event = JSON.parse(body); 
-                  const source = event.data?.subject?.source;
-                  const relative_path = event.data?.subject?.relativePath;
-                  const url = source + relative_path;
+      message.readString("utf8", async (error, body) => {
+        if (error) {
+          console.error(
+            "Erreur lors de la lecture du message :",
+            error.message
+          );
+          return;
+        }
 
-                  console.log("Constructed URL:", url);
-                  // const url = "https://r1132102747346-eu1-space.3dexperience.3ds.com/enovia/resources/v1/modeler/documents/A8FB660EB51D3200675325AC0000068B"
-                  const response = await axios.get(url, {
-                        headers: {
-                            Authorization: `Basic ${Buffer.from(
-                                `${connectionHeaders.login}:${connectionHeaders.passcode}`
-                            ).toString('base64')}`,
-                        },
-                    });
-
-                  event.data.subject.title = response.data.data[0].dataelements.title;
-                  console.log("************************************************************")
-                  console.log('Event with document title:', event);
-                  wss.clients.forEach((client) => {
-                    if (client.readyState === WebSocket.OPEN) {
-                      client.send(JSON.stringify(event));
-                    }
-                  });
-
-              } catch (parseError) {
-                  console.error("Erreur lors de l'analyse du JSON :", parseError.message);
-              }
-
-              client.ack(message); // Accusé de réception
+        try {
+          const event = JSON.parse(body);
+          const source = event.data?.subject?.source;
+          const relative_path = event.data?.subject?.relativePath;
+          const url = source + relative_path;
+            console.log("Constructed URL:", url);
+            
+          // const url = "https://r1132102747346-eu1-space.3dexperience.3ds.com/enovia/resources/v1/modeler/documents/A8FB660EB51D3200675325AC0000068B"
+          const response = await axios.get(url, {
+            headers: {
+              Authorization: `Basic ${Buffer.from(
+                `${connectionHeaders.login}:${connectionHeaders.passcode}`
+              ).toString("base64")}`,
+            },
           });
-        
+
+          event.data.subject.title = response.data.data[0].dataelements.title;
+          console.log("************************************************************");
+          console.log("Event with document title:", event);
+
+          wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+              client.send(JSON.stringify(event));
+            }
+          });
+          console.log("Événement envoyé ");
+        } catch (parseError) {
+          console.error(
+            "Erreur lors de l'analyse du JSON :",
+            parseError.message
+          );
+        }
+
+        client.ack(message); // Accusé de réception
+      });
     });
   });
 }
