@@ -55,12 +55,12 @@
 
     // Function to add an event to the table
     function addEventToTable(eventData) {
-      console.log("here ?")
+      link = eventData.source + eventData.relative_path
       console.log(eventData)
       const row = document.createElement("tr");
       row.innerHTML = `
           <td>${eventData.title || "N/A"}</td>
-          <td>${eventData.source || "N/A"}</td>
+          <a href="${link || '#'}" target="_blank">${link || "N/A"}</a>
           <td>${eventData.eventClass || "N/A"}</td>
           <td>${eventData.user || "N/A"}</td>
           <td>${new Date(eventData.timestamp).toLocaleString()}</td>
