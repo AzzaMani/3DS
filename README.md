@@ -15,7 +15,7 @@ sudo service mysql start
 mysql -u root -p 
 SOURCE init.sql;
 ``` 
-- if the source didn't work you can copy the file init.sql into your mysql.
+- if the "source init.sql" didn't work you can copy the file init.sql into your mysql to mannually create the DB.
 
 ### 2. Backend setup : 
 ```bash
